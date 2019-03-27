@@ -1,0 +1,96 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+<style>
+    /*Ideally in Site.css*/
+    .centeralign {
+        text-align: center;
+        vertical-align: middle;
+    }
+</style>
+<div class="row" style="margin-top:10px">
+    <button class="btn btn-primary pull-right" onclick="LoadFrm(0)" data-toggle="modal" data-target="#myModal"><span class="fa fa-plus" aria-hidden="true"></span> Add New</button>
+    <div id="listData" class="col-md-12"></div>
+
+</div>
+<div id='myModal' class='modal fade in'>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div id='myModalContent'></div>
+        </div>
+    </div>
+</div>
+<div id='ConfModal' class='modal fade in '>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header-">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Confirm</h4>
+            </div>
+
+            <div id='ConfModalContent' class="modal-body">
+                <h3>Are you sure ?</h3>
+                <button class="btn btn-primary" data-dismiss="modal" onclick="Delete()">Yes</button>
+                <button class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    idDel = 0;
+    $(document).ready(function () {
+        LoadList();
+    });
+      function LoadList() {
+          $("#listData").html("<div class='centeralign'><i class='fa fa-4x fa-spin fa-circle-o-notch'></i></div>");
+          $("#listData").load("@Url.Action("DataList", "Home")");
+    }
+      function LoadFrm(id) {
+          $("#myModalContent").html("<div class='centeralign'><i class='fa fa-4x fa-spin fa-circle-o-notch'></i></div>");
+          $("#myModalContent").load("@Url.Action("FormData", "Home")/" + id );
+    }
+    function Save() {
+        if ($('#frmData').valid())
+            {
+                 $("#btnSave").attr("disabled", "disabled");
+      myApp.showPleaseWait();
+            $.ajax({
+                url: '@Url.Action("FormData", "Home")',
+                    method: 'post',
+                    data: $("#frmData").serialize(),
+                    success: function (data) {
+                        if (data.result) {
+                            LoadList();
+                        } else {
+                            alert(data.message);
+                        }
+                        myApp.hidePleaseWait();
+                        $("#myModal").modal("hide");
+                    },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    alert("Something went wrong please try again.")
+                        $("#btnSave").removeAttr("disabled");
+                        myApp.hidePleaseWait();
+                    }
+                });
+            }
+
+    }
+    function SetDelId(id) {
+        idDel = id;
+    }
+    function Delete() {
+        $.ajax({
+            url: '@Url.Action("DeleteData", "Home")',
+            data: { id: idDel },
+            success: function (response) {
+                if (response.result) {
+                    LoadList();
+                } else {
+                    alert("Error in deleting !!");
+                }
+                idDel = 0;
+            }
+        })
+    }
+</script>
